@@ -1,4 +1,4 @@
-package com.bean;
+package com.bean.engine;
 
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;

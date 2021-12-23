@@ -1,4 +1,4 @@
-package com.bean;
+package com.bean.engine;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
