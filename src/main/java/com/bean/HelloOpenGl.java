@@ -124,8 +124,6 @@ public class HelloOpenGl {
 
             render(delta);
 
-
-
             glfwSwapBuffers(window); // swap the color buffers
             glfwPollEvents(); // ie key callbacks
         }
@@ -143,15 +141,13 @@ public class HelloOpenGl {
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
             glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
 
-
             glClear(GL_COLOR_BUFFER_BIT);
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
 
-
     }
 
-    private void terminate() {
+     private void terminate() {
         // Free the window callbacks and destroy the window
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);

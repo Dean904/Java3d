@@ -1,8 +1,10 @@
 package com.bean;
 
 import org.joml.Matrix4f;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -13,7 +15,7 @@ import java.nio.file.Path;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindFragDataLocation;
 
-public class Shader {
+public class Shader implements Closeable {
 
     public Shader(String vertexSourcePath, String fragmentSourcePath) {
 
@@ -31,24 +33,25 @@ public class Shader {
         glVertexAttribPointer(colAttrib, 3, GL_FLOAT, false, 6 * floatSize, 3 * floatSize);
 
         // Uniform Configuration
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            int uniformModelLoc = glGetUniformLocation(shaderProgram, "model");
-            FloatBuffer model = new Matrix4f().get(stack.mallocFloat(16));
-            glUniformMatrix4fv(uniformModelLoc, false, model);
+        int uniformModelLoc = glGetUniformLocation(shaderProgram, "model");
+        FloatBuffer model = new Matrix4f().get(BufferUtils.createFloatBuffer(16));
+        glUniformMatrix4fv(uniformModelLoc, false, model);
 
-            int uniformViewLoc = glGetUniformLocation(shaderProgram, "view");
-            FloatBuffer view = new Matrix4f().get(stack.mallocFloat(16));
-            glUniformMatrix4fv(uniformViewLoc, false, view);
+        int uniformViewLoc = glGetUniformLocation(shaderProgram, "view");
+        FloatBuffer view = new Matrix4f().get(BufferUtils.createFloatBuffer(16));
+        glUniformMatrix4fv(uniformViewLoc, false, view);
 
-            int uniformProjectionLoc = glGetUniformLocation(shaderProgram, "projection");
-            float ratio = 640f / 480f;
-            FloatBuffer projection = new Matrix4f().ortho(ratio, ratio, -1f, 1f, -1f, 1f).get(stack.mallocFloat(16));
-            glUniformMatrix4fv(uniformProjectionLoc, false, projection);
-        }
+        int uniformProjectionLoc = glGetUniformLocation(shaderProgram, "projection");
+        float ratio = 640f / 480f;
+        FloatBuffer projection = new Matrix4f().ortho(ratio, ratio, -1f, 1f, -1f, 1f).get(BufferUtils.createFloatBuffer(16));
+        glUniformMatrix4fv(uniformProjectionLoc, false, projection);
 
     }
 
     private int compile(String vertexSourcePath, String fragmentSourcePath) {
+
+        // glShaderSource = OpenGL copies the shader source code strings when glShaderSource is called, so an application
+        // may free its copy of the source code strings immediately after the function returns.
         int vertexShader = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertexShader, getSource(vertexSourcePath));
         glCompileShader(vertexShader);
@@ -65,8 +68,10 @@ public class Shader {
         glBindFragDataLocation(shaderProgram, 0, "fragColor");
         glLinkProgram(shaderProgram);
 
-        int status = glGetProgrami(shaderProgram, GL_LINK_STATUS);
-        if (status != GL_TRUE) {
+        if (glGetShaderInfoLog(shaderProgram).trim().length() > 0) {
+            System.err.println(glGetShaderInfoLog(shaderProgram));
+        }
+        if (glGetProgrami(shaderProgram, GL_LINK_STATUS) != GL_TRUE) {
             throw new RuntimeException(glGetProgramInfoLog(shaderProgram));
         }
 
@@ -90,4 +95,8 @@ public class Shader {
         }
     }
 
+    @Override
+    public void close() throws IOException {
+
+    }
 }
