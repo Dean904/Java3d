@@ -1,6 +1,6 @@
-package com.bean.engine;
+package com.bean.engine.mesh;
 
-import com.bean.engine.graph.Mesh;
+import com.bean.engine.mesh.Mesh;
 import org.joml.Vector3f;
 
 public class GameItem {
@@ -46,6 +46,12 @@ public class GameItem {
         this.rotation.x = x;
         this.rotation.y = y;
         this.rotation.z = z;
+    }
+
+    public void setRotation(Vector3f rotation) {
+        this.rotation.x = rotation.x;
+        this.rotation.y = rotation.y;
+        this.rotation.z = rotation.z;
     }
 
     public Mesh getMesh() {

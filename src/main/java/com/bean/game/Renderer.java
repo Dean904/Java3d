@@ -1,18 +1,18 @@
 package com.bean.game;
 
-import com.bean.engine.GameItem;
-import com.bean.engine.ShaderProgram;
+import com.bean.engine.mesh.GameItem;
+import com.bean.engine.graph.Camera;
+import com.bean.engine.graph.ShaderProgram;
 import com.bean.engine.Window;
-import com.bean.engine.graph.Mesh;
 import com.bean.engine.graph.Transformation;
+import com.bean.engine.mesh.Mesh;
 import org.joml.Matrix4f;
-import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
-import java.nio.FloatBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -32,17 +32,18 @@ public class Renderer {
 
     public void init(Window window) throws Exception {
         shaderProgram = new ShaderProgram();
-        shaderProgram.createVertexShader(loadResource("src/main/java/resources/shaders/vertex.shader"));
-        shaderProgram.createFragmentShader(loadResource("src/main/java/resources/shaders/fragment.shader"));
+        shaderProgram.createVertexShader(loadResource("src/main/resources/shaders/vertex.shader"));
+        shaderProgram.createFragmentShader(loadResource("src/main/resources/shaders/fragment.shader"));
         shaderProgram.link();
 
         shaderProgram.createUniform("projectionMatrix");
-        shaderProgram.createUniform("worldMatrix");
+        shaderProgram.createUniform("modelViewMatrix");
+        shaderProgram.createUniform("texture_sampler");
 
         window.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     }
 
-    public void render(Window window, GameItem[] gameItems) {
+    public void render(Window window, Camera camera, List<GameItem> gameItems) {
         clear();
 
         if (window.isResized()) {
@@ -51,17 +52,19 @@ public class Renderer {
         }
 
         shaderProgram.bind();
+
         Matrix4f projectionMatrix = transformation.getProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
         shaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
+        shaderProgram.setUniform("texture_sampler", 0);
+
+
+        Matrix4f viewMatrix = transformation.getViewMatrix(camera); // Update view Matrix
+
         for (GameItem gameItem : gameItems) {
-            // Set world matrix for this item
-            Matrix4f worldMatrix = transformation.getWorldMatrix(
-                    gameItem.getPosition(),
-                    gameItem.getRotation(),
-                    gameItem.getScale());
-            shaderProgram.setUniform("worldMatrix", worldMatrix);
-            // Render the mes for this game item
+            Mesh mesh = gameItem.getMesh();
+            Matrix4f modelViewMatrix = transformation.getModelViewMatrix(gameItem, viewMatrix);
+            shaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
             gameItem.getMesh().render();
         }
 

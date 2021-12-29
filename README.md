@@ -1,6 +1,7 @@
 # Java3d - 3D Game Development with LWJGL 3
 
 - https://lwjglgamedev.gitbooks.io/3d-game-development-with-lwjgl/content/
+- https://github.com/lwjglgamedev/lwjglbook
 
 - LWJGL JavaDocs https://javadoc.lwjgl.org/overview-summary.html
 - LWJGL Source https://github.com/LWJGL/lwjgl3/tree/master/modules/lwjgl

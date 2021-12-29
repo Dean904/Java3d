@@ -1,12 +1,20 @@
 package com.bean.game;
 
-import com.bean.engine.GameItem;
+import com.bean.engine.mesh.GameItem;
 import com.bean.engine.GameLogic;
+import com.bean.engine.MouseInput;
 import com.bean.engine.Window;
-import com.bean.engine.graph.Mesh;
+import com.bean.engine.graph.Camera;
+import com.bean.engine.mesh.CubeMeshFactory;
+import com.bean.engine.mesh.Mesh;
+import org.joml.Math;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.lwjgl.glfw.GLFW.*;
 
 public class DummyGame implements GameLogic {
 
@@ -14,98 +22,79 @@ public class DummyGame implements GameLogic {
     private float color = 0.0f;
 
     private final Renderer renderer;
-    private GameItem[] gameItems;
+    private List<GameItem> gameItems = new ArrayList<>();
+
+    private final Vector3f cameraInc;
+    private final Camera camera;
 
     public DummyGame() {
         renderer = new Renderer();
+        camera = new Camera();
+        cameraInc = new Vector3f();
     }
 
     @Override
     public void init(Window window) throws Exception {
         renderer.init(window);
-        float[] positions = new float[] {
-                // VO
-                -0.5f,  0.5f,  0.5f,
-                // V1
-                -0.5f, -0.5f,  0.5f,
-                // V2
-                0.5f, -0.5f,  0.5f,
-                // V3
-                0.5f,  0.5f,  0.5f,
-                // V4
-                -0.5f,  0.5f, -0.5f,
-                // V5
-                0.5f,  0.5f, -0.5f,
-                // V6
-                -0.5f, -0.5f, -0.5f,
-                // V7
-                0.5f, -0.5f, -0.5f,
-        };
-        float[] colours = new float[]{
-                0.5f, 0.0f, 0.0f,
-                0.0f, 0.5f, 0.0f,
-                0.0f, 0.0f, 0.5f,
-                0.0f, 0.5f, 0.5f,
-                0.5f, 0.0f, 0.0f,
-                0.0f, 0.5f, 0.0f,
-                0.0f, 0.0f, 0.5f,
-                0.0f, 0.5f, 0.5f,
-        };
-        int[] indices = new int[] {
-                // Front face
-                0, 1, 3, 3, 1, 2,
-                // Top Face
-                4, 0, 3, 5, 4, 3,
-                // Right face
-                3, 2, 7, 5, 3, 7,
-                // Left face
-                6, 1, 0, 6, 0, 4,
-                // Bottom face
-                2, 1, 6, 2, 6, 7,
-                // Back face
-                7, 6, 4, 7, 4, 5,
-        };
-        GameItem gameItem = new GameItem(new Mesh(positions, colours, indices));
-        float rotation = gameItem.getRotation().x + 1.5f;
-        if ( rotation > 360 ) {
-            rotation = 0;
-        }
-        gameItem.setRotation(rotation, rotation, rotation);
-        gameItem.setPosition(0, 0, -2);
-        gameItems = new GameItem[]{gameItem};
-    }
 
-    @Override
-    public void input(Window window) {
-        if (window.isKeyPressed(GLFW_KEY_UP)) {
-            direction = 1;
-        } else if (window.isKeyPressed(GLFW_KEY_DOWN)) {
-            direction = -1;
-        } else {
-            direction = 0;
+        Mesh cubeMesh = CubeMeshFactory.getCubeMesh();
+        for (int i = 0; i < 100; i++) {
+            GameItem grassCube = new GameItem(cubeMesh);
+            grassCube.setPosition(Math.sin(Math.toRadians((i + 100) * 10)), (float) (i * .2), Math.sin(Math.toRadians((i + 100) * 10)));
+            grassCube.setRotation(3 * i, 3 * i, 3 * i);
+            gameItems.add(grassCube);
         }
     }
 
     @Override
-    public void update(float interval) {
-        color += direction * 0.01f;
-        if (color > 1) {
-            color = 1.0f;
-        } else if (color < 0) {
-            color = 0.0f;
+    public void input(Window window, MouseInput mouseInput) {
+        cameraInc.set(0, 0, 0);
+        if (window.isKeyPressed(GLFW_KEY_W)) {
+            cameraInc.z = -1;
+        } else if (window.isKeyPressed(GLFW_KEY_S)) {
+            cameraInc.z = 1;
+        }
+        if (window.isKeyPressed(GLFW_KEY_A)) {
+            cameraInc.x = -1;
+        } else if (window.isKeyPressed(GLFW_KEY_D)) {
+            cameraInc.x = 1;
+        }
+        if (window.isKeyPressed(GLFW_KEY_Z)) {
+            cameraInc.y = -1;
+        } else if (window.isKeyPressed(GLFW_KEY_X)) {
+            cameraInc.y = 1;
+        }
+    }
+
+    @Override
+    public void update(float interval, MouseInput mouseInput) {
+        // Update camera position
+        float CAMERA_POS_STEP = 0.1f;
+        camera.movePosition(cameraInc.x * CAMERA_POS_STEP,
+                cameraInc.y * CAMERA_POS_STEP,
+                cameraInc.z * CAMERA_POS_STEP);
+
+        // Update camera based on mouse
+        float MOUSE_SENSITIVITY = 0.4f;
+
+        if (mouseInput.isRightButtonPressed()) {
+            Vector2f rotVec = mouseInput.getDisplacementVec();
+            camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0);
         }
 
-        float rotation = gameItems[0].getRotation().x + 1.5f;
-        if ( rotation > 360 ) {
-            rotation = 0;
-        }
-        gameItems[0].setRotation(rotation, rotation, rotation);
+        gameItems.forEach(item -> item.setRotation(item.getRotation().add(new Vector3f(1.5f))));
+
+//        float rotation = gameItems.get(0).getRotation().x + 1.5f;
+//        if (rotation > 360) {
+//            rotation = 0;
+//        }
+//        gameItems.get(0).setRotation(rotation, rotation, rotation);
     }
 
     @Override
     public void render(Window window) {
         window.setClearColor(color, color, color, 0.0f);
-        renderer.render(window, gameItems);
+        renderer.render(window, camera, gameItems);
     }
 
     @Override

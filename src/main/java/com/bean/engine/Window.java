@@ -135,6 +135,8 @@ public class Window {
         this.vSync = vSync;
     }
 
+    public long getWindowHandle() { return windowHandle; }
+
     public void update() {
         glfwSwapBuffers(windowHandle);
         glfwPollEvents();
