@@ -90,6 +90,9 @@ public class Window {
 
         GL.createCapabilities();
 
+        // Enable Mesh View
+        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
         // Set the clear color
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glEnable(GL_DEPTH_TEST);

@@ -1,5 +1,7 @@
 package com.bean.game;
 
+import com.bean.engine.graph.OBJLoader;
+import com.bean.engine.graph.Texture;
 import com.bean.engine.mesh.GameItem;
 import com.bean.engine.GameLogic;
 import com.bean.engine.MouseInput;
@@ -37,13 +39,22 @@ public class DummyGame implements GameLogic {
     public void init(Window window) throws Exception {
         renderer.init(window);
 
-        Mesh cubeMesh = CubeMeshFactory.getCubeMesh();
+        Mesh cubeMesh = OBJLoader.loadMesh("src/main/resources/models/cube.obj");
+        cubeMesh.setTexture(new Texture("src/main/resources/textures/grassblock.png"));
         for (int i = 0; i < 100; i++) {
             GameItem grassCube = new GameItem(cubeMesh);
             grassCube.setPosition(Math.sin(Math.toRadians((i + 100) * 10)), (float) (i * .2), Math.sin(Math.toRadians((i + 100) * 10)));
             grassCube.setRotation(3 * i, 3 * i, 3 * i);
+            grassCube.setScale(0.1f);
             gameItems.add(grassCube);
         }
+
+        Mesh bunnyMesh = OBJLoader.loadMesh("src/main/resources/models/bunny.obj");
+        GameItem bunny = new GameItem(bunnyMesh);
+        bunny.setScale(1.5f);
+        bunny.setPosition(0, 0, 0);
+        gameItems.add(bunny);
+
     }
 
     @Override
@@ -82,7 +93,7 @@ public class DummyGame implements GameLogic {
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0);
         }
 
-        gameItems.forEach(item -> item.setRotation(item.getRotation().add(new Vector3f(1.5f))));
+        //gameItems.forEach(item -> item.setRotation(item.getRotation().add(new Vector3f(1.5f))));
 
 //        float rotation = gameItems.get(0).getRotation().x + 1.5f;
 //        if (rotation > 360) {
