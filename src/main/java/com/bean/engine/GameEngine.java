@@ -60,6 +60,7 @@ public class GameEngine implements Runnable {
                 accumulator -= interval;
             }
 
+
             render();
             // Sync is probably needed for target VSync, dont want to hard-code FPS atm though
         }

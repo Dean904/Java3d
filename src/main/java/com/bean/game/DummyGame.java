@@ -29,6 +29,8 @@ public class DummyGame implements GameLogic {
     private final Vector3f cameraInc;
     private final Camera camera;
 
+    int tick = 0;
+
     public DummyGame() {
         renderer = new Renderer();
         camera = new Camera();
@@ -70,10 +72,12 @@ public class DummyGame implements GameLogic {
         } else if (window.isKeyPressed(GLFW_KEY_D)) {
             cameraInc.x = 1;
         }
-        if (window.isKeyPressed(GLFW_KEY_Z)) {
+        if (window.isKeyPressed(GLFW_KEY_TAB)) {
             cameraInc.y = -1;
-        } else if (window.isKeyPressed(GLFW_KEY_X)) {
+        } else if (window.isKeyPressed(GLFW_KEY_SPACE)) {
             cameraInc.y = 1;
+        } else if (window.isKeyPressed(GLFW_KEY_Z)) {
+            window.togglePolygonMode();
         }
     }
 
@@ -93,13 +97,23 @@ public class DummyGame implements GameLogic {
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0);
         }
 
+
         //gameItems.forEach(item -> item.setRotation(item.getRotation().add(new Vector3f(1.5f))));
 
-//        float rotation = gameItems.get(0).getRotation().x + 1.5f;
-//        if (rotation > 360) {
-//            rotation = 0;
-//        }
-//        gameItems.get(0).setRotation(rotation, rotation, rotation);
+        int tixMax = gameItems.size();
+        gameItems.forEach(item -> {
+            if (tick == gameItems.indexOf(item)) {
+                item.setScale(item.getScale() * 10);
+            } else {
+                item.setScale(.1f);
+            }
+        });
+
+        if (tick > tixMax) {
+            tick = 0;
+        }
+
+        tick++;
     }
 
     @Override

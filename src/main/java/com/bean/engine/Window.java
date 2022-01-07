@@ -7,6 +7,7 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.glPolygonMode;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window {
@@ -20,8 +21,9 @@ public class Window {
     private long windowHandle;
 
     private boolean resized;
-
+    private boolean filling = true;
     private boolean vSync;
+
 
     public Window(String title, int width, int height, boolean vSync) {
         this.title = title;
@@ -90,8 +92,6 @@ public class Window {
 
         GL.createCapabilities();
 
-        // Enable Mesh View
-        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
         // Set the clear color
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -104,6 +104,16 @@ public class Window {
 
     public boolean isKeyPressed(int keyCode) {
         return glfwGetKey(windowHandle, keyCode) == GLFW_PRESS;
+    }
+
+    public void togglePolygonMode() {
+        if (!filling) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            filling = true;
+        } else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            filling = false;
+        }
     }
 
     public boolean windowShouldClose() {
@@ -138,7 +148,9 @@ public class Window {
         this.vSync = vSync;
     }
 
-    public long getWindowHandle() { return windowHandle; }
+    public long getWindowHandle() {
+        return windowHandle;
+    }
 
     public void update() {
         glfwSwapBuffers(windowHandle);
