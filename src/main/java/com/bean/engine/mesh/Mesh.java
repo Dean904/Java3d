@@ -1,5 +1,6 @@
 package com.bean.engine.mesh;
 
+import com.bean.engine.graph.Material;
 import com.bean.engine.graph.Texture;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
@@ -21,8 +22,7 @@ public class Mesh {
 
     private final int vertexCount;
 
-    private Texture texture;
-    private Vector3f colour = new Vector3f(1.0f, 1.0f, 1.0f);
+    private Material material;
 
     public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices) {
         FloatBuffer posBuffer = null;
@@ -93,23 +93,20 @@ public class Mesh {
     }
 
     public void render() {
+        Texture texture = material.getTexture();
         if (texture != null) {
+            // Activate firs texture bank
             glActiveTexture(GL_TEXTURE0);
+            // Bind the texture
             glBindTexture(GL_TEXTURE_2D, texture.getId());
         }
 
         // Draw the mesh
         glBindVertexArray(getVaoId());
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
 
         glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
 
         // Restore state
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
-        glDisableVertexAttribArray(2);
         glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -117,13 +114,14 @@ public class Mesh {
     public void cleanUp() {
         glDisableVertexAttribArray(0);
 
-        // Delete the VBO
+        // Delete the VBOs
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         for (int vboId : vboIdList) {
             glDeleteBuffers(vboId);
         }
 
         // Delete the texture
+        Texture texture = material.getTexture();
         if (texture != null) {
             texture.cleanup();
         }
@@ -141,24 +139,13 @@ public class Mesh {
         return vertexCount;
     }
 
-    public boolean isTextured() {
-        return this.texture != null;
+
+    public Material getMaterial() {
+        return material;
     }
 
-    public Texture getTexture() {
-        return this.texture;
-    }
-
-    public void setTexture(Texture texture) {
-        this.texture = texture;
-    }
-
-    public void setColour(Vector3f colour) {
-        this.colour = colour;
-    }
-
-    public Vector3f getColour() {
-        return this.colour;
+    public void setMaterial(Material material) {
+        this.material = material;
     }
 
 }
